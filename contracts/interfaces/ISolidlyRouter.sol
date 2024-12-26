@@ -10,7 +10,7 @@ interface ISolidlyRouter {
 
     function addLiquidityETH(
         address token,
-        bool stable,
+        // bool stable,
         uint amountTokenDesired,
         uint amountTokenMin,
         uint amountETHMin,
