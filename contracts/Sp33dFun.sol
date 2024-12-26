@@ -59,11 +59,11 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
         uint256 maxSupply;
     }
 
-    address constant WETH = address(0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd);
+    address constant WETH = address(0x039e2fB66102314Ce7b64Ce5Ce3E5183bc94aD38);
     ISolidlyRouter constant router =
-        ISolidlyRouter(0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3);
+        ISolidlyRouter(0xcC6169aA1E879d3a4227536671F85afdb2d23fAD);
     ISolidlyFactory constant factory =
-        ISolidlyFactory(0xB7926C0430Afb07AA7DEfDE6DA862aE0Bde767bc);
+        ISolidlyFactory(0xDDD9845Ba0D8f38d3045f804f67A1a8B9A528FcC);
 
     uint256 public initialAmount = 0.01 ether;
 
@@ -142,13 +142,14 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
     }
 
     function handleLiquidity(address _token, address _to) internal {
-        address pair = factory.createPair(_token, WETH);
+        address pair = factory.createPair(_token, WETH, false);
         uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
 
         IERC20(_token).approve(address(router), tokenBalance);
 
         router.addLiquidityETH{value: initialAmount}(
             address(_token),
+            false,
             tokenBalance,
             0,
             0,
