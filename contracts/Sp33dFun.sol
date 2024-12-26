@@ -105,7 +105,9 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
             "InitialAmount: invalid initial Amount!"
         );
 
-        Sp33dFunToken instance = new Sp33dFunToken(
+        Sp33dFunToken instance = new Sp33dFunToken();
+
+        Sp33dFunToken(instance).initialize(
             name,
             symbol,
             uri,
@@ -216,6 +218,10 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
         if (id >= tokens.length)
             return Token(address(0), address(0), "", "", "", 0);
         return tokens[id];
+    }
+
+    function getAllToken() external view returns (Token[] memory) {
+        return tokens;
     }
 
     function allPairsLength() external view returns (uint256) {
