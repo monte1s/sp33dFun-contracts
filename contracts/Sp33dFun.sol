@@ -65,8 +65,6 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
     ISolidlyFactory constant factory =
         ISolidlyFactory(0xDDD9845Ba0D8f38d3045f804f67A1a8B9A528FcC);
 
-    uint256 public initialAmount = 0.01 ether;
-
     Token[] internal tokens;
     mapping(address => uint256) public tokenIndexes;
 
@@ -100,23 +98,17 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
         string memory symbol,
         string memory uri
     ) external payable whenNotPaused {
-        require(
-            msg.value >= initialAmount,
-            "InitialAmount: invalid initial Amount!"
-        );
-
         Sp33dFunToken instance = new Sp33dFunToken();
 
         Sp33dFunToken(instance).initialize(
             name,
             symbol,
             uri,
-            tokenOwner,
-            MAX_SUPPLY,
-            initialAmount
+            MAX_SUPPLY
         );
 
-        handleLiquidity(address(instance), tokenOwner);
+        uint256 initialAmount = msg.value;
+        handleLiquidity(address(instance), initialAmount);
 
         tokens.push(
             Token({
@@ -141,23 +133,25 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
         );
     }
 
-    function handleLiquidity(address _token, address _to) internal {
+    function handleLiquidity(address _token, uint256 _initialAmount) internal {
         address pair = factory.createPair(_token, WETH, false);
         uint256 tokenBalance = IERC20(_token).balanceOf(address(this));
-
+        
         IERC20(_token).approve(address(router), tokenBalance);
-
-        router.addLiquidityETH{value: initialAmount}(
+        
+        (, , uint amount) = router.addLiquidityETH{value: _initialAmount}(
             address(_token),
             false,
             tokenBalance,
             0,
             0,
-            _to, // keep the LP tokens
+            address(this), // keep the LP tokens
             block.timestamp
         );
 
-        emit HandleLiquidity(_to, WETH, _token, pair);
+        IERC20(pair).transfer(address(0), amount);
+
+        emit HandleLiquidity(address(this), WETH, _token, pair);
     }
 
     function launchPermissioned(address tokenOwner, address token)
@@ -207,10 +201,6 @@ contract Sp33dFun is Ownable, PausableUpgradeable {
 
     function updateMaxSupply(uint256 _maxSupply) external onlyOwner {
         MAX_SUPPLY = _maxSupply;
-    }
-
-    function updateInitialAmount(uint256 _initialAmount) external onlyOwner {
-        initialAmount = _initialAmount;
     }
 
     // view functions
